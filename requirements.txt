@@ -10,8 +10,10 @@
 # chromadb==0.4.22
 
 
-Flask
-Flask_Cors
+fastapi
+uvicorn
+streamlit
+requests
 langchain
 langchain_community
 google-generativeai
