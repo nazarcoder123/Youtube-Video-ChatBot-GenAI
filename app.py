@@ -7,9 +7,8 @@ import openai
 import os
 from pytube import YouTube
 import re
-from langchain_openai.chat_models import ChatOpenAI
+from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain.chains import ConversationalRetrievalChain
-from langchain_openai import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import TextLoader
 from langchain_community.vectorstores import Chroma
@@ -20,8 +19,8 @@ load_dotenv()
 
 app = Flask(__name__, static_folder="./dist") # requests in the dist folder are being sent to http://localhost:5000/<endpoint> 
 CORS(app, resources={r"/*": {"origins": "*"}}) 
-openai.api_key = os.environ["OPENAI_API_KEY"]
-llm_name = "gpt-3.5-turbo"
+openai.api_key = os.environ["GOOGLE_API_KEY"]
+llm_name = "gemini-pro"
 qna_chain = None
 
 
@@ -56,7 +55,7 @@ def load_db(file, chain_type, k):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=70)
     docs = text_splitter.split_documents(transcript)
     
-    embeddings = OpenAIEmbeddings()                                                     
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
     
     db = Chroma.from_documents(docs, embeddings)
     
@@ -64,7 +63,7 @@ def load_db(file, chain_type, k):
 
     # create a chatbot chain. Memory is managed externally.
     qa = ConversationalRetrievalChain.from_llm(
-        llm = ChatOpenAI(temperature=0),                      #### Prompt Template is yet to be created
+        llm = ChatGoogleGenerativeAI(model="gemini-pro", temperature=0, convert_system_message_to_human=True),
         chain_type=chain_type,                               
         retriever=retriever, 
         return_source_documents=True,
